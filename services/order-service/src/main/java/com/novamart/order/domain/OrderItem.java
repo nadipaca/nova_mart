@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * JPA entity representing an item within an order.
@@ -24,6 +25,7 @@ public class OrderItem {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "order_id", nullable = false)
+    @JsonBackReference
     private Order order;
 
     @Column(nullable = false)
