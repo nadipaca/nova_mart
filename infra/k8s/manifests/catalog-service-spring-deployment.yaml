@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service-spring
+  namespace: novamart
+  labels:
+    app: catalog-service-spring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: catalog-service-spring
+  template:
+    metadata:
+      labels:
+        app: catalog-service-spring
+      annotations:
+        # Explicit annotation in case namespace-wide label is not enough.
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: catalog-service-spring
+          image: your-account.dkr.ecr.us-east-1.amazonaws.com/catalog-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "eks"
+            # Example DB configuration; adjust for your RDS endpoint/credentials.
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://novamart-catalog-dev-db.xxxxxxxxxxxx.us-east-1.rds.amazonaws.com:5432/novamart_catalog"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "novamart"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-db-credentials
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+

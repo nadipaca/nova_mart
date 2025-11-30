@@ -1,0 +1,23 @@
+# General
+target/
+build/
+out/
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Node / frontend
+node_modules/
+
+# Python
+__pycache__/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
