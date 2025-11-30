@@ -1,0 +1,12 @@
+novamart:
+  security:
+    cognito:
+      issuer: "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_o1EqblrWu"
+      audience: "2pos9ql83uc73oejcirvrb6d1g"
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${novamart.security.cognito.issuer}

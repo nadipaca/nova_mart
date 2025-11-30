@@ -1,0 +1,5 @@
+D:\workspace\nova_mart\services\catalog-service\src\main\java\com\novamart\catalog\CatalogServiceApplication.java
+D:\workspace\nova_mart\services\catalog-service\src\main\java\com\novamart\catalog\security\CognitoAudienceValidator.java
+D:\workspace\nova_mart\services\catalog-service\src\main\java\com\novamart\catalog\security\CognitoProperties.java
+D:\workspace\nova_mart\services\catalog-service\src\main\java\com\novamart\catalog\security\SecurityConfig.java
+D:\workspace\nova_mart\services\catalog-service\src\main\java\com\novamart\catalog\web\AuthController.java
