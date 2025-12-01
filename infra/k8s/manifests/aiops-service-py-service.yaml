@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aiops-service-py
+  namespace: novamart
+  labels:
+    app: aiops-service-py
+spec:
+  type: ClusterIP
+  selector:
+    app: aiops-service-py
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8001
+

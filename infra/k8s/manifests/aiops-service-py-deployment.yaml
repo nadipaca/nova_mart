@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiops-service-py
+  namespace: novamart
+  labels:
+    app: aiops-service-py
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aiops-service-py
+  template:
+    metadata:
+      labels:
+        app: aiops-service-py
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: aiops-service-py
+          image: your-account.dkr.ecr.us-east-1.amazonaws.com/aiops-service-py:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8001
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: TOPIC_METRIC_EMITTED
+              value: "metric.emitted"
+            - name: TOPIC_SCALE_RECOMMENDATION
+              value: "scale.recommendation"
+            - name: LATENCY_THRESHOLD_MS
+              value: "500"
+            - name: ERROR_RATE_THRESHOLD
+              value: "0.05"
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
