@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service-py
+  namespace: novamart
+  labels:
+    app: recommendation-service-py
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recommendation-service-py
+  template:
+    metadata:
+      labels:
+        app: recommendation-service-py
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: recommendation-service-py
+          image: your-account.dkr.ecr.us-east-1.amazonaws.com/recommendation-service-py:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql+psycopg2://novamart:root@novamart-catalog-dev-db.xxxxxxxxxxxx.us-east-1.rds.amazonaws.com:5432/novamart_recommendations"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: TOPIC_PRODUCT_VIEWED
+              value: "product.viewed"
+            - name: TOPIC_ORDER_COMPLETED
+              value: "order.completed"
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
