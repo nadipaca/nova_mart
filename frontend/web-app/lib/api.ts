@@ -18,7 +18,7 @@ export interface Product {
 }
 
 export async function fetchProducts(session: Session | null): Promise<Product[]> {
-  const res = await axios.get<Product[]>(`${apiBaseUrl}/catalog/products`, {
+  const res = await axios.get<Product[]>(`${apiBaseUrl}/products`, {
     headers: authHeaders(session)
   });
   return res.data;
@@ -29,7 +29,7 @@ export async function fetchProductById(
   session: Session | null
 ): Promise<Product> {
   const res = await axios.get<Product>(
-    `${apiBaseUrl}/catalog/products/${id}`,
+    `${apiBaseUrl}/products/${id}`,
     {
       headers: authHeaders(session)
     }
@@ -79,4 +79,3 @@ export async function placeOrder(
   });
   return res.data;
 }
-

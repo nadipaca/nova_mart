@@ -5,6 +5,7 @@ import java.util.List;
 import com.novamart.catalog.domain.Product;
 import com.novamart.catalog.repository.ProductRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @RestController
 @RequestMapping("/products")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
     private final ProductRepository productRepository;
@@ -41,4 +43,3 @@ public class ProductController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     }
 }
-
