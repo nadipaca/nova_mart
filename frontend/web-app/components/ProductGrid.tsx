@@ -15,6 +15,7 @@ interface Product {
 }
 
 export function ProductGrid({ products }: { products: Product[] }) {
+    console.log(products,"--prod");
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
       {products.map((product) => (
@@ -27,23 +28,14 @@ export function ProductGrid({ products }: { products: Product[] }) {
 function ProductCard({ product }: { product: Product }) {
   const rating = product.rating ?? 4.5;
   const reviewCount = product.reviewCount ?? 0;
-
+  console.log(product,"--product");
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden group">
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-square bg-gray-100">
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              No Image
-            </div>
-          )}
+          {product?.imageUrl && (
+            <img src={product.imageUrl} alt={product.name} className="mb-2 w-full h-40 object-cover" />
+         )}
           <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100">
             <Heart size={18} className="text-gray-600 hover:text-red-500" />
           </button>
