@@ -16,6 +16,9 @@ export interface Product {
   description?: string;
   price: number;
   imageUrl?: string;
+  createdAt?: string;
+  rating?: number;
+  reviewCount?: number;
 }
 
 export async function fetchProducts(session: Session | null): Promise<Product[]> {
@@ -36,6 +39,25 @@ export async function fetchProductById(
     }
   );
   return res.data;
+}
+
+export async function fetchDeals(session: Session | null): Promise<Product[]> {
+  const products = await fetchProducts(session);
+  return products.filter(p => p.price < 50).slice(0, 20);
+}
+
+export async function fetchNewArrivals(session: Session | null): Promise<Product[]> {
+  const products = await fetchProducts(session);
+  return products
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 20);
+}
+
+export async function fetchBestSellers(session: Session | null): Promise<Product[]> {
+  const products = await fetchProducts(session);
+  return products
+    .sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0))
+    .slice(0, 20);
 }
 
 export interface RecommendationResponse {

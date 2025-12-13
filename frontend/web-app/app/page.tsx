@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { ProductGrid } from "@/components/ProductGrid";
 import { RecommendedSection } from "@/components/RecommendedSection";
 import { ChevronRight, Truck, Shield, RotateCcw, Headphones } from "lucide-react";
@@ -7,7 +6,6 @@ import Link from "next/link";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
 
       {/* Hero Banner */}
       <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">

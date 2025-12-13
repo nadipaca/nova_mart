@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { SignInButton, SignOutButton, useSessionUser } from "./auth-buttons";
-import { ShoppingCart, Search, Menu, User } from "lucide-react";
+import { ShoppingCart, Search, Menu, User, ChevronDown } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useState } from "react";
 
 export function Navbar() {
   const user = useSessionUser();
   const { items } = useCart();
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const [showDepartments, setShowDepartments] = useState(false);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -27,7 +29,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center flex-shrink-0">
             <h1 className="text-2xl md:text-3xl font-bold text-blue-600">NovaMart</h1>
           </Link>
 
@@ -45,9 +47,9 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* User actions - FIXED: Reserve space to prevent layout shift */}
+          {/* User actions - Fixed width to prevent layout shift */}
           <div className="flex items-center gap-4 min-w-[280px] justify-end">
-            {/* Account section - reserve consistent width */}
+            {/* Account section */}
             <div className="min-w-[120px]">
               {user ? (
                 <div className="flex items-center gap-2 text-sm">
@@ -75,8 +77,8 @@ export function Navbar() {
               <span className="hidden md:block font-semibold">Cart</span>
             </Link>
 
-            {/* Sign out - reserve space */}
-            <div className="min-w-[70px]">
+            {/* Sign out */}
+            <div className="min-w-[80px]">
               {user && <SignOutButton />}
             </div>
           </div>
@@ -87,16 +89,39 @@ export function Navbar() {
       <nav className="bg-gray-100 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="flex items-center gap-6 py-3 text-sm font-medium overflow-x-auto">
-            <li>
-              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+            <li className="relative">
+              <button
+                onClick={() => setShowDepartments(!showDepartments)}
+                className="flex items-center gap-2 hover:text-blue-600 transition-colors whitespace-nowrap"
+              >
                 <Menu size={18} />
                 All Departments
+                <ChevronDown size={16} />
               </button>
+
+              {showDepartments && (
+                <div className="absolute top-full left-0 mt-2 bg-white shadow-lg rounded-lg py-2 min-w-[200px] z-50">
+                  <Link
+                    href="/departments"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                    onClick={() => setShowDepartments(false)}
+                  >
+                    View All Departments
+                  </Link>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <Link href="/products" className="block px-4 py-2 hover:bg-gray-100" onClick={() => setShowDepartments(false)}>All Products</Link>
+                  <Link href="/departments/electronics" className="block px-4 py-2 hover:bg-gray-100" onClick={() => setShowDepartments(false)}>Electronics</Link>
+                  <Link href="/departments/computers" className="block px-4 py-2 hover:bg-gray-100" onClick={() => setShowDepartments(false)}>Computers</Link>
+                  <Link href="/departments/audio-headphones" className="block px-4 py-2 hover:bg-gray-100" onClick={() => setShowDepartments(false)}>Audio & Headphones</Link>
+                  <Link href="/departments/home-appliances" className="block px-4 py-2 hover:bg-gray-100" onClick={() => setShowDepartments(false)}>Home Appliances</Link>
+                </div>
+              )}
+
             </li>
-            <li><Link href="/products" className="hover:text-blue-600 transition-colors">Products</Link></li>
-            <li><Link href="/deals" className="hover:text-blue-600 transition-colors">Today's Deals</Link></li>
-            <li><Link href="/new" className="hover:text-blue-600 transition-colors">New Arrivals</Link></li>
-            <li><Link href="/bestsellers" className="hover:text-blue-600 transition-colors">Best Sellers</Link></li>
+            <li><Link href="/products" className="hover:text-blue-600 transition-colors whitespace-nowrap">All Products</Link></li>
+            <li><Link href="/deals" className="hover:text-blue-600 transition-colors whitespace-nowrap">Today's Deals</Link></li>
+            <li><Link href="/new" className="hover:text-blue-600 transition-colors whitespace-nowrap">New Arrivals</Link></li>
+            <li><Link href="/bestsellers" className="hover:text-blue-600 transition-colors whitespace-nowrap">Best Sellers</Link></li>
           </ul>
         </div>
       </nav>
