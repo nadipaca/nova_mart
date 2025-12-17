@@ -1,7 +1,19 @@
-const AWS = require('aws-sdk');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const eventBridge = new AWS.EventBridge();
+const dynamoConfig = {
+  region: process.env.AWS_REGION || 'us-east-2'
+};
+
+// Use local DynamoDB if AWS_ENDPOINT_URL is set
+if (process.env.AWS_ENDPOINT_URL) {
+  dynamoConfig.endpoint = process.env.AWS_ENDPOINT_URL;
+}
+
+const dynamoClient = new DynamoDBClient(dynamoConfig);
+const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
+const eventBridge = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-2' });
 
 const INVENTORY_TABLE_NAME = process.env.INVENTORY_TABLE_NAME || 'inventory';
 const EVENT_BUS_NAME = process.env.EVENT_BUS_NAME || 'default';
@@ -21,7 +33,7 @@ const EVENT_SOURCE = process.env.EVENT_SOURCE || 'novamart.inventory-service';
  *   ]
  * }
  */
-exports.inventoryHandler = async (event) => {
+export const inventoryHandler = async (event) => {
   console.log('Received event:', JSON.stringify(event));
 
   const order = event.detail;
@@ -30,8 +42,8 @@ exports.inventoryHandler = async (event) => {
     return;
   }
 
-  const outOfStockItems = [];
-  const updates = [];
+  const unavailableItems = []; // items with insufficient stock discovered in first pass
+  const updates = []; // candidates to decrement
 
   // First pass: check availability for all items
   for (const item of order.items) {
@@ -43,14 +55,14 @@ exports.inventoryHandler = async (event) => {
       Key: { productId }
     };
 
-    const { Item } = await dynamodb.get(getParams).promise();
+    const { Item } = await dynamodb.send(new GetCommand(getParams));
 
     const available = Item && typeof Item.availableQty === 'number'
       ? Item.availableQty
       : 0;
 
     if (available < quantity) {
-      outOfStockItems.push({
+      unavailableItems.push({
         productId,
         requested: quantity,
         available
@@ -60,17 +72,9 @@ exports.inventoryHandler = async (event) => {
     }
   }
 
-  if (outOfStockItems.length > 0) {
-    // Emit inventory.out_of_stock
-    await publishInventoryEvent('inventory.out_of_stock', {
-      orderId: order.orderId,
-      customerId: order.customerId,
-      outOfStockItems
-    });
-
-    console.log('Out of stock:', JSON.stringify(outOfStockItems));
-    return;
-  }
+  // Try to decrement stock for candidates (best-effort). Collect reserved and failed.
+  const reservedItems = [];
+  const failedUpdates = [];
 
   // Second pass: decrement stock for all items (best-effort, non-transactional).
   for (const u of updates) {
@@ -85,26 +89,51 @@ exports.inventoryHandler = async (event) => {
     };
 
     try {
-      await dynamodb.update(updateParams).promise();
+      await dynamodb.send(new UpdateCommand(updateParams));
+      reservedItems.push({ productId: u.productId, quantity: u.quantity });
     } catch (err) {
       console.error(
         `Failed to update inventory for productId=${u.productId}`,
         err
       );
-      // In a real system, you might emit a compensating event here.
-      outOfStockItems.push({
-        productId: u.productId,
-        requested: u.quantity,
-        available: null
-      });
+      failedUpdates.push({ productId: u.productId, requested: u.quantity, available: null, error: (err && err.message) || 'update_failed' });
     }
   }
 
-  if (outOfStockItems.length > 0) {
+  // Publish events:
+  // 1) If any items were reserved, publish inventory.reserved so downstream (order/payment) continues processing reserved items.
+  if (reservedItems.length > 0) {
+    await publishInventoryEvent('inventory.reserved', {
+      orderId: order.orderId,
+      customerId: order.customerId,
+      items: reservedItems
+    });
+    console.log('Reserved items:', JSON.stringify(reservedItems));
+  }
+
+  // 2) If there are any unavailable/failed items, publish a failure event that indicates refunds are required for those items.
+  const failedItems = [...unavailableItems, ...failedUpdates];
+
+  if (failedItems.length > 0) {
+    // Provide reservedItems alongside failedItems so downstream services can reconcile and refund only failed items.
+    await publishInventoryEvent('inventory.reservation_failed', {
+      orderId: order.orderId,
+      customerId: order.customerId,
+      failedItems,
+      reservedItems
+    });
+
+    console.log('Reservation failed for items:', JSON.stringify(failedItems));
+    // Note: do NOT throw — Lambda successfully processed event and told the system which items failed.
+  }
+// If no reserved items and there are failures, still return (we already published reservation_failed).
+
+
+  if (unavailableItems.length > 0) {
     await publishInventoryEvent('inventory.out_of_stock', {
       orderId: order.orderId,
       customerId: order.customerId,
-      outOfStockItems
+      unavailableItems
     });
   } else {
     // Emit inventory.reserved
@@ -133,5 +162,12 @@ async function publishInventoryEvent(detailType, payload) {
     JSON.stringify(payload)
   );
 
-  await eventBridge.putEvents(params).promise();
+  // Skip EventBridge when testing locally (AWS_ENDPOINT_URL is set for DynamoDB Local)
+  if (process.env.AWS_SAM_LOCAL === 'true' || process.env.AWS_ENDPOINT_URL) {
+    console.log('⚠️  Local mode: Skipping EventBridge publish (not available locally)');
+    console.log(`   Event would be published: ${detailType}`);
+    return;
+  }
+
+  await eventBridge.send(new PutEventsCommand(params));
 }

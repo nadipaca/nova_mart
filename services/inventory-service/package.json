@@ -2,14 +2,24 @@
   "name": "inventory-service",
   "version": "1.0.0",
   "description": "Serverless inventory service implemented as AWS Lambda functions.",
-  "main": "index.js",
+  "main": "src/inventoryHandler.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "node seedInventory.js",
+    "seed:local": "set LOCAL=true && node seedInventory.js",
+    "create-local-table": "node scripts/createLocalTable.js",
+    "build": "sam build",
+    "deploy": "sam deploy --guided",
+    "local-test": "sam local invoke InventoryFunction --event events/order-placed.json",
+    "check": "node scripts/checkInventory.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["inventory", "lambda", "serverless"],
+  "author": "NovaMart Team",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.940.0"
+    "@aws-sdk/client-dynamodb": "^3.940.0",
+    "@aws-sdk/lib-dynamodb": "^3.940.0",
+    "@aws-sdk/client-eventbridge": "^3.940.0"
   }
 }

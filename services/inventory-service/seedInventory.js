@@ -3,6 +3,18 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 const REGION = "us-east-2";
 const TABLE_NAME = "inventory";
 
+// Use local DynamoDB if LOCAL env var is set
+const clientConfig = process.env.LOCAL 
+  ? { 
+      region: REGION, 
+      endpoint: "http://localhost:8001",
+      credentials: {
+        accessKeyId: "dummy",
+        secretAccessKey: "dummy"
+      }
+    }
+  : { region: REGION };
+
 const items = [
   // Blenders
   { productId: "blend-001", warehouseId: "wh-1", stock: 50 },
@@ -34,7 +46,7 @@ const items = [
   { productId: "keyboard-001", warehouseId: "wh-1", stock: 40 }
 ];
 
-const client = new DynamoDBClient({ region: REGION });
+const client = new DynamoDBClient(clientConfig);
 
 async function main() {
   for (const item of items) {
@@ -43,14 +55,14 @@ async function main() {
       Item: {
         productId: { S: item.productId },
         warehouseId: { S: item.warehouseId },
-        stock: { N: item.stock.toString() }
+        availableQty: { N: item.stock.toString() }
       }
     });
 
     try {
       await client.send(command);
       console.log(
-        `Inserted inventory item: productId=${item.productId}, warehouseId=${item.warehouseId}, stock=${item.stock}`
+        `Inserted inventory item: productId=${item.productId}, warehouseId=${item.warehouseId}, availableQty=${item.stock}`
       );
     } catch (err) {
       console.error(

@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NovaMart Inventory Service
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        INVENTORY_TABLE_NAME: inventory
+        EVENT_BUS_NAME: default
+        EVENT_SOURCE: novamart.inventory-service
+        AWS_REGION: us-east-2
+        AWS_ENDPOINT_URL: http://host.docker.internal:8001
+
+Resources:
+  InventoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: novamart-inventory-handler
+      CodeUri: ./
+      Handler: src/inventoryHandler.inventoryHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: inventory
+        - EventBridgePutEventsPolicy:
+            EventBusName: default
+      Events:
+        OrderPlacedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - novamart.order-service
+              detail-type:
+                - order.placed
+
+  InventoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: inventory
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: productId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: productId
+          KeyType: HASH
+
+Outputs:
+  InventoryFunctionArn:
+    Description: Inventory Function ARN
+    Value: !GetAtt InventoryFunction.Arn
+  
+  InventoryTableName:
+    Description: Inventory Table Name
+    Value: !Ref InventoryTable
