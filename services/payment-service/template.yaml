@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: NovaMart Payment Service
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+    MemorySize: 512
+    Environment:
+      Variables:
+        PAYMENT_TABLE_NAME: !Ref PaymentTable
+        REFUND_TABLE_NAME: !Ref RefundTable
+        EVENT_BUS_NAME: default
+        AWS_REGION: !Ref AWS::Region
+
+Resources:
+  # Payment Processing Function
+  PaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: novamart-payment-handler
+      CodeUri: src/
+      Handler: paymentHandler.paymentHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PaymentTable
+        - EventBridgePutEventsPolicy:
+            EventBusName: default
+      Events:
+        OrderPlacedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - novamart.order-service
+              detail-type:
+                - order.placed
+                - order.ready_for_payment
+
+  # Refund Processing Function
+  RefundFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: novamart-refund-handler
+      CodeUri: src/
+      Handler: refundHandler.refundHandler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PaymentTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RefundTable
+        - EventBridgePutEventsPolicy:
+            EventBusName: default
+      Events:
+        InventoryFailedRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - novamart.inventory-service
+              detail-type:
+                - inventory.reservation_failed
+        OrderCancelledRule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - novamart.order-service
+              detail-type:
+                - order.cancelled
+
+  # Payment Table
+  PaymentTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: payments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: paymentId
+          AttributeType: S
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: paymentId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: orderId-index
+          KeySchema:
+            - AttributeName: orderId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Refund Table
+  RefundTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: refunds
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: refundId
+          AttributeType: S
+        - AttributeName: paymentId
+          AttributeType: S
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: refundId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: paymentId-index
+          KeySchema:
+            - AttributeName: paymentId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: orderId-index
+          KeySchema:
+            - AttributeName: orderId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  PaymentFunctionArn:
+    Description: Payment Function ARN
+    Value: !GetAtt PaymentFunction.Arn
+  
+  RefundFunctionArn:
+    Description: Refund Function ARN
+    Value: !GetAtt RefundFunction.Arn
+  
+  PaymentTableName:
+    Description: Payment Table Name
+    Value: !Ref PaymentTable
+  
+  RefundTableName:
+    Description: Refund Table Name
+    Value: !Ref RefundTable
