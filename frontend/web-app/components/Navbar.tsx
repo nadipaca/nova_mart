@@ -87,9 +87,9 @@ export function Navbar() {
 
       {/* Navigation */}
       <nav className="bg-gray-100 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 relative">
           <ul className="flex items-center gap-6 py-3 text-sm font-medium overflow-x-auto">
-            <li className="relative">
+            <li>
               <button
                 onClick={() => setShowDepartments(!showDepartments)}
                 className="flex items-center gap-2 hover:text-blue-600 transition-colors whitespace-nowrap"

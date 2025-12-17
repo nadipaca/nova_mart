@@ -55,7 +55,7 @@ public class OrderController {
         if (customerId != null && !customerId.isBlank()) {
             return orderService.getOrdersForCustomer(customerId);
         }
-        return orderService.getOrdersForCustomer(customerId);
+        return orderService.getAllOrders();
     }
 }
 

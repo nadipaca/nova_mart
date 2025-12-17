@@ -38,7 +38,7 @@ function ProductCard({ product }: { product: Product }) {
 
   return (
     <Link href={`/products/${product.id}`} className="group">
-      <div className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-400">
+      <div className="flex flex-col h-full min-h-[420px] max-h-[420px] bg-white h-100 rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 hover:border-blue-400">
         {/* Image Container */}
         <div className="relative aspect-square bg-white overflow-hidden">
           {product.imageUrl ? (

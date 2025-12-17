@@ -65,5 +65,10 @@ public class OrderService {
     public List<Order> getOrdersForCustomer(String customerId) {
         return orderRepository.findByCustomerId(customerId);
     }
+
+    @Transactional(readOnly = true)
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }
 

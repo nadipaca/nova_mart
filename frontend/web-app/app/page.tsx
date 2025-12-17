@@ -43,6 +43,7 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Personalized Recommendations */}
         <RecommendedSection />
+        <h1>Hello</h1>
 
         {/* Categories */}
         <section className="mt-12">
