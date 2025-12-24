@@ -1,0 +1,22 @@
+{
+  "name": "shipping-service",
+  "version": "1.0.0",
+  "description": "NovaMart Shipping Service - AWS Lambda functions for shipment management",
+  "main": "src/shippingHandler.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "sam build",
+    "deploy": "sam deploy --guided",
+    "local-test": "sam local invoke ShippingFunction --event events/payment-succeeded.json"
+  },
+  "keywords": ["shipping", "lambda", "serverless"],
+  "author": "NovaMart Team",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.940.0",
+    "@aws-sdk/lib-dynamodb": "^3.940.0",
+    "@aws-sdk/client-eventbridge": "^3.940.0",
+    "uuid": "^9.0.0"
+  }
+}

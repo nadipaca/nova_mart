@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: NovaMart Inventory Service
+Description: NovaMart Shipping Service
 
 Globals:
   Function:
@@ -9,38 +9,33 @@ Globals:
     MemorySize: 256
     Environment:
       Variables:
-        INVENTORY_TABLE_NAME: inventory
+        SHIPMENT_TABLE_NAME: shipments
         EVENT_BUS_NAME: default
-        EVENT_SOURCE: novamart.inventory-service
 
 Resources:
-  InventoryFunction:
+  ShippingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: novamart-inventory-handler
+      FunctionName: novamart-shipping-handler
       CodeUri: ./
-      Handler: src/inventoryHandler.inventoryHandler
+      Handler: src/shippingHandler.shippingHandler
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: inventory
+            TableName: shipments
         - EventBridgePutEventsPolicy:
             EventBusName: default
       Events:
-        OrderPlacedRule:
+        PaymentSucceededRule:
           Type: EventBridgeRule
           Properties:
             EventBusName: default
             Pattern:
               source:
-                - novamart.order-service
+                - novamart.payment-service
               detail-type:
-                - order.placed
+                - payment.succeeded
 
 Outputs:
-  InventoryFunctionArn:
-    Description: Inventory Function ARN
-    Value: !GetAtt InventoryFunction.Arn
-  
-  InventoryTableName:
-    Description: Inventory Table Name (created by Terraform)
-    Value: inventory
+  ShippingFunctionArn:
+    Description: Shipping Function ARN
+    Value: !GetAtt ShippingFunction.Arn

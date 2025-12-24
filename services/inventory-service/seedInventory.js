@@ -55,14 +55,14 @@ async function main() {
       Item: {
         productId: { S: item.productId },
         warehouseId: { S: item.warehouseId },
-        availableQty: { N: item.stock.toString() }
+        stock: { N: item.stock.toString() }
       }
     });
 
     try {
       await client.send(command);
       console.log(
-        `Inserted inventory item: productId=${item.productId}, warehouseId=${item.warehouseId}, availableQty=${item.stock}`
+        `Inserted inventory item: productId=${item.productId}, warehouseId=${item.warehouseId}, stock=${item.stock}`
       );
     } catch (err) {
       console.error(

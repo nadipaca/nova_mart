@@ -57,8 +57,8 @@ export const inventoryHandler = async (event) => {
 
     const { Item } = await dynamodb.send(new GetCommand(getParams));
 
-    const available = Item && typeof Item.availableQty === 'number'
-      ? Item.availableQty
+    const available = Item && typeof Item.stock === 'number'
+      ? Item.stock
       : 0;
 
     if (available < quantity) {
@@ -81,8 +81,8 @@ export const inventoryHandler = async (event) => {
     const updateParams = {
       TableName: INVENTORY_TABLE_NAME,
       Key: { productId: u.productId },
-      UpdateExpression: 'SET availableQty = availableQty - :q',
-      ConditionExpression: 'attribute_exists(availableQty) AND availableQty >= :q',
+      UpdateExpression: 'SET stock = stock - :q',
+      ConditionExpression: 'attribute_exists(stock) AND stock >= :q',
       ExpressionAttributeValues: {
         ':q': u.quantity
       }

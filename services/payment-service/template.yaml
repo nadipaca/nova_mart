@@ -12,7 +12,6 @@ Globals:
         PAYMENT_TABLE_NAME: !Ref PaymentTable
         REFUND_TABLE_NAME: !Ref RefundTable
         EVENT_BUS_NAME: default
-        AWS_REGION: !Ref AWS::Region
 
 Resources:
   # Payment Processing Function
