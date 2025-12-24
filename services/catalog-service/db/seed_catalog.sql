@@ -1,4 +1,25 @@
-ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url text;
+-- Create products table if it doesn't exist
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  sku VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Add image_url column if it doesn't exist (for existing tables)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'products' AND column_name = 'image_url'
+  ) THEN
+    ALTER TABLE products ADD COLUMN image_url TEXT;
+  END IF;
+END $$;
 
 -- Upsert products by SKU, including S3 image URLs
 INSERT INTO products (sku, name, description, price, image_url, created_at, updated_at) VALUES

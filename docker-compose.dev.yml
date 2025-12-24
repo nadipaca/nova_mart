@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: novamart-postgres-dev
+    environment:
+      POSTGRES_USER: novamart
+      POSTGRES_PASSWORD: dev-password
+      POSTGRES_DB: novamart_catalog
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./services/catalog-service/db/seed_catalog.sql:/docker-entrypoint-initdb.d/seed_catalog.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novamart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
