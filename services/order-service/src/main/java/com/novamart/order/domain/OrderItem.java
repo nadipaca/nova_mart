@@ -31,6 +31,9 @@ public class OrderItem {
     @Column(nullable = false)
     private Long productId;
 
+    @Column(length = 64)
+    private String productSku;
+
     @Column(nullable = false)
     private Integer quantity;
 
@@ -61,6 +64,14 @@ public class OrderItem {
         this.productId = productId;
     }
 
+    public String getProductSku() {
+        return productSku;
+    }
+
+    public void setProductSku(String productSku) {
+        this.productSku = productSku;
+    }
+
     public Integer getQuantity() {
         return quantity;
     }
@@ -77,4 +88,3 @@ public class OrderItem {
         this.unitPrice = unitPrice;
     }
 }
-

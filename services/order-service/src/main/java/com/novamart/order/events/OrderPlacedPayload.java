@@ -49,18 +49,26 @@ public class OrderPlacedPayload {
     }
 
     public static class OrderItemPayload {
-        private Long productId;
+        private String productId;
+        private Long catalogProductId;
         private Integer quantity;
         private BigDecimal unitPrice;
 
         public OrderItemPayload(OrderItem item) {
-            this.productId = item.getProductId();
+            this.productId = item.getProductSku() != null && !item.getProductSku().isBlank()
+                ? item.getProductSku()
+                : String.valueOf(item.getProductId());
+            this.catalogProductId = item.getProductId();
             this.quantity = item.getQuantity();
             this.unitPrice = item.getUnitPrice();
         }
 
-        public Long getProductId() {
+        public String getProductId() {
             return productId;
+        }
+
+        public Long getCatalogProductId() {
+            return catalogProductId;
         }
 
         public Integer getQuantity() {
@@ -72,4 +80,3 @@ public class OrderPlacedPayload {
         }
     }
 }
-
