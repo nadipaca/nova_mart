@@ -1,8 +1,31 @@
 import axios from "axios";
 import type { Session } from "next-auth";
 
-const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.novamart.dev";
+function normalizeBaseUrl(value: string): string {
+  return value.replace(/\/+$/, "");
+}
+
+const apiBaseUrl = normalizeBaseUrl(
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://api.novamart.dev"
+);
+
+function defaultOrderBaseUrlFromApiBaseUrl(baseUrl: string): string {
+  try {
+    const url = new URL(baseUrl);
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+      url.port = "8081";
+      return normalizeBaseUrl(url.toString());
+    }
+  } catch {
+    // ignore
+  }
+  return baseUrl;
+}
+
+const orderBaseUrl = normalizeBaseUrl(
+  process.env.NEXT_PUBLIC_ORDER_API_BASE_URL ??
+    defaultOrderBaseUrlFromApiBaseUrl(apiBaseUrl)
+);
 
 function authHeaders(session: Session | null) {
   const token = (session as any)?.accessToken as string | undefined;
@@ -69,18 +92,26 @@ export async function fetchRecommendations(
   userId: string,
   session: Session | null
 ): Promise<RecommendationResponse> {
-  const res = await axios.get<RecommendationResponse>(
-    `${apiBaseUrl}/recommendations`,
-    {
-      params: { userId },
-      headers: authHeaders(session)
+  try {
+    const res = await axios.get<RecommendationResponse>(
+      `${apiBaseUrl}/recommendations`,
+      {
+        params: { userId },
+        headers: authHeaders(session)
+      }
+    );
+    return res.data;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      return { userId, productIds: [] };
     }
-  );
-  return res.data;
+    throw err;
+  }
 }
 
 export interface CreateOrderItem {
   productId: number;
+  productSku?: string;
   quantity: number;
   unitPrice: number;
 }
@@ -94,7 +125,7 @@ export async function placeOrder(
   payload: CreateOrderRequest,
   session: Session | null
 ): Promise<any> {
-  const res = await axios.post(`${apiBaseUrl}/orders`, payload, {
+  const res = await axios.post(`${orderBaseUrl}/orders`, payload, {
     headers: {
       ...authHeaders(session),
       "Content-Type": "application/json"

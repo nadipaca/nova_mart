@@ -3,16 +3,7 @@
 import Link from "next/link";
 import { Star, Heart, Plus } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-
-interface Product {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  imageUrl?: string;
-  rating?: number;
-  reviewCount?: number;
-}
+import type { Product } from "@/lib/api";
 
 export function ProductGrid({ products }: { products: Product[] }) {
   return (

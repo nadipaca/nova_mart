@@ -11,6 +11,7 @@ export interface CartItem {
 interface CartContextValue {
   items: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
+  setQuantity: (productId: number, quantity: number) => void;
   removeFromCart: (productId: number) => void;
   clearCart: () => void;
 }
@@ -19,6 +20,7 @@ const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -27,19 +29,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const raw = window.localStorage.getItem("novamart_cart");
     if (raw) {
       try {
-        setItems(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+        } else {
+          setItems([]);
+        }
       } catch {
         setItems([]);
       }
     }
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
+    if (!hydrated) {
+      return;
+    }
     window.localStorage.setItem("novamart_cart", JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
 
   const addToCart = (product: Product, quantity = 1) => {
     setItems(prev => {
@@ -55,6 +66,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const setQuantity = (productId: number, quantity: number) => {
+    const normalized = Math.max(0, Math.floor(quantity));
+    setItems(prev => {
+      if (normalized <= 0) {
+        return prev.filter(ci => ci.product.id !== productId);
+      }
+      return prev.map(ci =>
+        ci.product.id === productId ? { ...ci, quantity: normalized } : ci
+      );
+    });
+  };
+
   const removeFromCart = (productId: number) => {
     setItems(prev => prev.filter(ci => ci.product.id !== productId));
   };
@@ -63,7 +86,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, removeFromCart, clearCart }}
+      value={{ items, addToCart, setQuantity, removeFromCart, clearCart }}
     >
       {children}
     </CartContext.Provider>

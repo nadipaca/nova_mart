@@ -21,9 +21,14 @@ public class CognitoAudienceValidator implements OAuth2TokenValidator<Jwt> {
         if (audiences != null && audiences.contains(audience)) {
             return OAuth2TokenValidatorResult.success();
         }
+
+        String clientId = token.getClaimAsString("client_id");
+        if (clientId != null && clientId.equals(audience)) {
+            return OAuth2TokenValidatorResult.success();
+        }
         OAuth2Error error = new OAuth2Error(
             "invalid_token",
-            "The required audience " + audience + " is missing",
+            "The required audience/client_id " + audience + " is missing",
             null
         );
         return OAuth2TokenValidatorResult.failure(error);

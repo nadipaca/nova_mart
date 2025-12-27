@@ -17,16 +17,23 @@ export function RecommendedSection({ userIdHint }: Props) {
   const [loading, setLoading] = useState(false);
 
   const userId = userIdHint ?? (session?.user as any)?.sub;
+  const recommendationsEnabled =
+    process.env.NEXT_PUBLIC_ENABLE_RECOMMENDATIONS === "true";
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
 
-    // If user is signed in, fetch personalized recommendations
-    if (userId) {
+    // If user is signed in and recommendations are enabled, fetch personalized recommendations
+    if (userId && recommendationsEnabled) {
       fetchRecommendations(userId, session ?? null)
         .then(res => {
           if (cancelled) return;
+          if (res.productIds.length === 0) {
+            return fetchProducts(session ?? null).then(allProducts => {
+              if (!cancelled) setProducts(allProducts.slice(0, 10));
+            });
+          }
           // Fetch actual product details for recommended IDs
           return fetchProducts(session ?? null).then(allProducts => {
             const recommended = allProducts.filter(p => 
