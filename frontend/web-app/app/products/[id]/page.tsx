@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { fetchProductById, type Product } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
-import { Star, Heart, Share2, Truck, RotateCcw, Shield } from "lucide-react";
+import { Star, Heart, Share2, Truck, RotateCcw, Shield, Package } from "lucide-react";
 import Link from "next/link";
 
 export default function ProductDetailPage() {
@@ -145,7 +145,7 @@ export default function ProductDetailPage() {
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-4 py-2 hover:bg-gray-100 transition-colors"
                 >
-                  −
+                  -
                 </button>
                 <span className="px-6 py-2 border-x border-gray-300">{quantity}</span>
                 <button

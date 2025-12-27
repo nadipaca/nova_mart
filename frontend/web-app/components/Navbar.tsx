@@ -9,7 +9,7 @@ import { useState } from "react";
 export function Navbar() {
   const user = useSessionUser();
   const { items } = useCart();
-  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartCount = items.length;
   const [showDepartments, setShowDepartments] = useState(false);
 
   return (
