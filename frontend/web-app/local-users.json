@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "id": "demo-user",
+      "email": "demo@novamart.local",
+      "name": "Demo User",
+      "roles": ["customer"],
+      "passwordSalt": "M2812uZ2lWDaGjTYbS7aBA==",
+      "passwordHash": "ox5Ml7UyYMezoihbRcSozOcIGsUELGOPM5UCzHtLpN2hkDu6mSgBiHa/PPD8mkvCQeAIwsR+BTmxyqLj90rG2g=="
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 export function SignInButton() {
   const { data: session, status } = useSession();
@@ -19,12 +20,12 @@ export function SignInButton() {
   }
   
   return (
-    <button
-      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-semibold"
-      onClick={() => signIn("cognito")}
+    <Link
+      href="/signin"
+      className="inline-flex px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-semibold"
     >
       Sign In
-    </button>
+    </Link>
   );
 }
 
@@ -38,7 +39,7 @@ export function SignOutButton() {
   return (
     <button
       className="px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 transition-colors"
-      onClick={() => signOut()}
+      onClick={() => signOut({ callbackUrl: "/" })}
     >
       Sign Out
     </button>

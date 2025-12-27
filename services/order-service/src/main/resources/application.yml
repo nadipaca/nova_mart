@@ -19,6 +19,9 @@ novamart:
     # Name of the EventBridge event bus for NovaMart (adjust for your account).
     bus-name: ${NOVAMART_EVENT_BUS:default}
     source: "novamart.order-service"
+  inventory:
+    table: ${INVENTORY_TABLE_NAME:inventory}
+    enforce: ${INVENTORY_ENFORCE:true}
   security:
     cognito:
       issuer: "https://cognito-idp.us-east-2.amazonaws.com/us-east-2_o1EqblrWu"
@@ -26,4 +29,3 @@ novamart:
 
 aws:
   region: ${AWS_REGION:us-east-1}
-
