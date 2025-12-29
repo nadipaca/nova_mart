@@ -1,0 +1,22 @@
+{
+  "PaymentFunction": {
+    "AWS_REGION": "us-east-2",
+    "AWS_ENDPOINT_URL": "http://novamart-payment-dynamodb:8000",
+    "EVENTBRIDGE_ENDPOINT_URL": "http://novamart-payment-localstack:4566",
+    "PAYMENT_TABLE_NAME": "payments",
+    "REFUND_TABLE_NAME": "refunds",
+    "EVENT_BUS_NAME": "default",
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test"
+  },
+  "RefundFunction": {
+    "AWS_REGION": "us-east-2",
+    "AWS_ENDPOINT_URL": "http://novamart-payment-dynamodb:8000",
+    "EVENTBRIDGE_ENDPOINT_URL": "http://novamart-payment-localstack:4566",
+    "PAYMENT_TABLE_NAME": "payments",
+    "REFUND_TABLE_NAME": "refunds",
+    "EVENT_BUS_NAME": "default",
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test"
+  }
+}

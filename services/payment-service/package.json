@@ -1,6 +1,7 @@
 {
   "name": "payment-service",
   "version": "1.0.0",
+  "type": "module",
   "description": "NovaMart Payment Service - Serverless payment processing",
   "main": "src/paymentHandler.js",
   "scripts": {
@@ -8,6 +9,7 @@
     "test:unit": "jest tests/unit",
     "test:integration": "jest tests/integration",
     "lint": "eslint src/",
+    "create-local-tables": "node scripts/createLocalTables.js",
     "seed": "node scripts/seedPaymentEvents.js",
     "check": "node scripts/checkPayments.js"
   },
@@ -18,6 +20,7 @@
     "@aws-sdk/client-eventbridge": "^3.940.0",
     "@aws-sdk/client-dynamodb": "^3.940.0",
     "@aws-sdk/lib-dynamodb": "^3.940.0",
+    "dotenv": "^16.4.5",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

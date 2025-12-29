@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
@@ -7,9 +8,21 @@ const dynamoConfig = {
   region: process.env.AWS_REGION || 'us-east-2'
 };
 
+if (process.env.AWS_ENDPOINT_URL) {
+  dynamoConfig.endpoint = process.env.AWS_ENDPOINT_URL;
+}
+
 const dynamoClient = new DynamoDBClient(dynamoConfig);
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
-const eventBridge = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-2' });
+const eventBridgeConfig = {
+  region: process.env.AWS_REGION || 'us-east-2'
+};
+
+if (process.env.EVENTBRIDGE_ENDPOINT_URL) {
+  eventBridgeConfig.endpoint = process.env.EVENTBRIDGE_ENDPOINT_URL;
+}
+
+const eventBridge = new EventBridgeClient(eventBridgeConfig);
 
 const PAYMENT_TABLE_NAME = process.env.PAYMENT_TABLE_NAME || 'payments';
 const REFUND_TABLE_NAME = process.env.REFUND_TABLE_NAME || 'refunds';

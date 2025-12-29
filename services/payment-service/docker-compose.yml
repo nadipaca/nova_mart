@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-payment-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8001:8000"
+    volumes:
+      - payment_dynamodb_data:/home/dynamodblocal/data
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: novamart-payment-localstack
+    environment:
+      SERVICES: events
+      AWS_DEFAULT_REGION: us-east-2
+    ports:
+      - "4567:4566"
+    volumes:
+      - payment_localstack_data:/var/lib/localstack
+
+volumes:
+  payment_dynamodb_data:
+  payment_localstack_data:

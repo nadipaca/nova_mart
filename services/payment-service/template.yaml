@@ -19,8 +19,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: novamart-payment-handler
-      CodeUri: src/
-      Handler: paymentHandler.paymentHandler
+      CodeUri: ./
+      Handler: src/paymentHandler.paymentHandler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PaymentTable
@@ -43,8 +43,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: novamart-refund-handler
-      CodeUri: src/
-      Handler: refundHandler.refundHandler
+      CodeUri: ./
+      Handler: src/refundHandler.refundHandler
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref PaymentTable
