@@ -14,10 +14,13 @@ import com.novamart.order.dto.CreateOrderItemRequest;
 
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+
+import java.net.URI;
 
 @Component
 public class InventoryClient {
@@ -30,12 +33,16 @@ public class InventoryClient {
 
     public InventoryClient(
         @Value("${aws.region}") String awsRegion,
+        @Value("${aws.endpoint:}") String awsEndpoint,
         @Value("${novamart.inventory.table:${INVENTORY_TABLE_NAME:inventory}}") String tableName,
         @Value("${novamart.inventory.enforce:${INVENTORY_ENFORCE:true}}") boolean enforce
     ) {
-        this.dynamoDb = DynamoDbClient.builder()
-            .region(Region.of(awsRegion))
-            .build();
+        DynamoDbClientBuilder builder = DynamoDbClient.builder()
+            .region(Region.of(awsRegion));
+        if (awsEndpoint != null && !awsEndpoint.isBlank()) {
+            builder.endpointOverride(URI.create(awsEndpoint));
+        }
+        this.dynamoDb = builder.build();
         this.tableName = tableName;
         this.enforce = enforce;
     }

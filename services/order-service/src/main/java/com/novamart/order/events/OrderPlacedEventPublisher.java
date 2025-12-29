@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
+import software.amazon.awssdk.services.eventbridge.EventBridgeClientBuilder;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
+
+import java.net.URI;
 
 /**
  * Publishes order.placed events to AWS EventBridge.
@@ -27,12 +30,16 @@ public class OrderPlacedEventPublisher {
 
     public OrderPlacedEventPublisher(
         @Value("${aws.region}") String awsRegion,
+        @Value("${aws.eventbridge-endpoint:}") String eventBridgeEndpoint,
         @Value("${novamart.events.bus-name}") String busName,
         @Value("${novamart.events.source}") String source
     ) {
-        this.eventBridgeClient = EventBridgeClient.builder()
-            .region(Region.of(awsRegion))
-            .build();
+        EventBridgeClientBuilder builder = EventBridgeClient.builder()
+            .region(Region.of(awsRegion));
+        if (eventBridgeEndpoint != null && !eventBridgeEndpoint.isBlank()) {
+            builder.endpointOverride(URI.create(eventBridgeEndpoint));
+        }
+        this.eventBridgeClient = builder.build();
         this.objectMapper = new ObjectMapper();
         this.busName = busName;
         this.source = source;
