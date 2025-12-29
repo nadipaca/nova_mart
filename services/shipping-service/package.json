@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "create-local-table": "node scripts/createLocalTable.js",
     "build": "sam build",
     "deploy": "sam deploy --guided",
     "local-test": "sam local invoke ShippingFunction --event events/payment-succeeded.json"
@@ -17,6 +18,7 @@
     "@aws-sdk/client-dynamodb": "^3.940.0",
     "@aws-sdk/lib-dynamodb": "^3.940.0",
     "@aws-sdk/client-eventbridge": "^3.940.0",
+    "dotenv": "^16.4.5",
     "uuid": "^9.0.0"
   }
 }

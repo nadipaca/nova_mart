@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-shipping-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8002:8000"
+    volumes:
+      - shipping_dynamodb_data:/home/dynamodblocal/data
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: novamart-shipping-localstack
+    environment:
+      SERVICES: events
+      AWS_DEFAULT_REGION: us-east-2
+    ports:
+      - "4568:4566"
+    volumes:
+      - shipping_localstack_data:/var/lib/localstack
+
+volumes:
+  shipping_dynamodb_data:
+  shipping_localstack_data:
