@@ -1,13 +1,14 @@
+import "dotenv/config";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
 const REGION = "us-east-2";
 const TABLE_NAME = "inventory";
 
 // Use local DynamoDB if LOCAL env var is set
-const clientConfig = process.env.LOCAL 
-  ? { 
-      region: REGION, 
-      endpoint: "http://localhost:8001",
+const clientConfig = process.env.LOCAL
+  ? {
+      region: REGION,
+      endpoint: process.env.AWS_ENDPOINT_URL || "http://localhost:8000",
       credentials: {
         accessKeyId: "dummy",
         secretAccessKey: "dummy"

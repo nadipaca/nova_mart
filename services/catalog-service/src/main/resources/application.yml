@@ -9,7 +9,7 @@ spring:
     # Use environment variables when running in Docker/EKS; fall back to local defaults.
     url: ${DB_URL:jdbc:postgresql://localhost:5432/novamart_catalog}
     username: ${DB_USERNAME:novamart}
-    password: ${DB_PASSWORD:root}
+    password: ${DB_PASSWORD:dev-password}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:

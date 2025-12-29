@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
@@ -13,7 +14,15 @@ if (process.env.AWS_ENDPOINT_URL) {
 
 const dynamoClient = new DynamoDBClient(dynamoConfig);
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
-const eventBridge = new EventBridgeClient({ region: process.env.AWS_REGION || 'us-east-2' });
+const eventBridgeConfig = {
+  region: process.env.AWS_REGION || 'us-east-2'
+};
+
+if (process.env.EVENTBRIDGE_ENDPOINT_URL) {
+  eventBridgeConfig.endpoint = process.env.EVENTBRIDGE_ENDPOINT_URL;
+}
+
+const eventBridge = new EventBridgeClient(eventBridgeConfig);
 
 const INVENTORY_TABLE_NAME = process.env.INVENTORY_TABLE_NAME || 'inventory';
 const EVENT_BUS_NAME = process.env.EVENT_BUS_NAME || 'default';
@@ -162,9 +171,13 @@ async function publishInventoryEvent(detailType, payload) {
     JSON.stringify(payload)
   );
 
-  // Skip EventBridge when testing locally (AWS_ENDPOINT_URL is set for DynamoDB Local)
-  if (process.env.AWS_SAM_LOCAL === 'true' || process.env.AWS_ENDPOINT_URL) {
-    console.log('⚠️  Local mode: Skipping EventBridge publish (not available locally)');
+  // Skip EventBridge locally unless a local endpoint is configured.
+  const hasLocalEventBridge = Boolean(process.env.EVENTBRIDGE_ENDPOINT_URL);
+  const isLocalDynamo = Boolean(process.env.AWS_ENDPOINT_URL);
+  const eventBridgeDisabled = process.env.EVENTBRIDGE_DISABLED === 'true';
+
+  if (eventBridgeDisabled || (!hasLocalEventBridge && (process.env.AWS_SAM_LOCAL === 'true' || isLocalDynamo))) {
+    console.log('Local mode: Skipping EventBridge publish');
     console.log(`   Event would be published: ${detailType}`);
     return;
   }
