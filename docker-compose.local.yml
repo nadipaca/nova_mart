@@ -1,0 +1,149 @@
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: novamart-localstack
+    environment:
+      SERVICES: events,lambda,iam,logs,cloudwatch
+      AWS_DEFAULT_REGION: us-east-2
+      LAMBDA_EXECUTOR: docker
+      LAMBDA_DOCKER_NETWORK: novamart
+      LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 120
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tools/localstack:/etc/localstack/init
+    networks:
+      - novamart
+
+  inventory-dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-inventory-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8000:8000"
+    networks:
+      - novamart
+
+  payment-dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-payment-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8001:8000"
+    networks:
+      - novamart
+
+  shipping-dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-shipping-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8002:8000"
+    networks:
+      - novamart
+
+  catalog-postgres:
+    image: postgres:15
+    container_name: novamart-catalog-postgres
+    environment:
+      POSTGRES_USER: novamart
+      POSTGRES_PASSWORD: dev-password
+      POSTGRES_DB: novamart_catalog
+    ports:
+      - "5432:5432"
+    volumes:
+      - catalog_postgres_data:/var/lib/postgresql/data
+      - ./services/catalog-service/db/seed_catalog.sql:/docker-entrypoint-initdb.d/seed_catalog.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novamart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - novamart
+
+  order-postgres:
+    image: postgres:15
+    container_name: novamart-order-postgres
+    environment:
+      POSTGRES_USER: novamart
+      POSTGRES_PASSWORD: dev-password
+      POSTGRES_DB: novamart_orders
+    ports:
+      - "5433:5432"
+    volumes:
+      - order_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U novamart"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - novamart
+
+  catalog-service:
+    build:
+      context: ./services/catalog-service
+    container_name: novamart-catalog-service
+    env_file:
+      - ./.env.docker
+      - ./services/catalog-service/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - catalog-postgres
+    networks:
+      - novamart
+
+  order-service:
+    build:
+      context: ./services/order-service
+    container_name: novamart-order-service
+    env_file:
+      - ./.env.docker
+      - ./services/order-service/.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      - order-postgres
+      - inventory-dynamodb
+      - localstack
+    networks:
+      - novamart
+
+  recommendation-service:
+    build:
+      context: ./services/recommendation-service
+    container_name: novamart-recommendation-service
+    env_file:
+      - ./.env.docker
+      - ./services/recommendation-service/.env
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./services/recommendation-service/recommendations.db:/app/recommendations.db
+    networks:
+      - novamart
+
+  aiops-service:
+    build:
+      context: ./services/aiops-service
+    container_name: novamart-aiops-service
+    env_file:
+      - ./.env.docker
+      - ./services/aiops-service/.env
+    ports:
+      - "8004:8001"
+    networks:
+      - novamart
+
+volumes:
+  catalog_postgres_data:
+  order_postgres_data:
+
+networks:
+  novamart:
+    name: novamart

@@ -1,5 +1,0 @@
-com\novamart\catalog\security\SecurityConfig.class
-com\novamart\catalog\CatalogServiceApplication.class
-com\novamart\catalog\security\CognitoProperties.class
-com\novamart\catalog\security\CognitoAudienceValidator.class
-com\novamart\catalog\web\AuthController.class

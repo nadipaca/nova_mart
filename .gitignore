@@ -48,6 +48,7 @@ coverage/
 !.env.example
 !.env.sample
 !.env.template
+!.env.docker
 
 # ---------- Terraform (NEVER COMMIT STATE) ----------
 **/.terraform/
@@ -67,6 +68,10 @@ samconfig.toml
 # ---------- Python (if any) ----------
 __pycache__/
 *.pyc
+
+# ---------- Local Dev Artifacts ----------
+services/recommendation-service/recommendations.db
+tools/localstack/packages/*.zip
 
 # ---------- Misc ----------
 response.json

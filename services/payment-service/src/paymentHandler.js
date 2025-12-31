@@ -44,6 +44,12 @@ export const paymentHandler = async (event) => {
   console.log('Payment Handler - Received event:', JSON.stringify(event));
 
   const order = event.detail;
+  if (order && order.healthCheck === true) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ status: 'ok' })
+    };
+  }
   if (!order || !order.orderId) {
     console.error('Invalid event.detail for payment handler');
     return {
@@ -54,14 +60,16 @@ export const paymentHandler = async (event) => {
 
   const paymentId = randomUUID();
   const timestamp = new Date().toISOString();
+  const customerId = order.userId || order.customerId || 'unknown';
+  const amountCents = Number(order.totalCents ?? order.amountCents ?? 0);
 
   try {
     // Create payment record
     const paymentRecord = {
       paymentId,
       orderId: order.orderId,
-      userId: order.userId || 'unknown',
-      amountCents: order.totalCents || 0,
+      userId: customerId,
+      amountCents,
       status: 'succeeded',
       paymentMethod: 'credit_card',
       createdAt: timestamp,
@@ -82,8 +90,9 @@ export const paymentHandler = async (event) => {
       Detail: JSON.stringify({
         paymentId,
         orderId: order.orderId,
-        userId: order.userId,
-        amountCents: order.totalCents,
+        userId: customerId,
+        customerId,
+        amountCents,
         timestamp
       }),
       EventBusName: EVENT_BUS_NAME

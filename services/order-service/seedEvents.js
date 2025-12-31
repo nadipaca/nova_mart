@@ -1,8 +1,14 @@
 import { EventBridgeClient, PutEventsCommand } from "@aws-sdk/client-eventbridge";
 
-const REGION = "us-east-2";
+const REGION = process.env.AWS_REGION || "us-east-2";
+const endpoint = process.env.EVENTBRIDGE_ENDPOINT_URL;
 
-const client = new EventBridgeClient({ region: REGION });
+const clientConfig = { region: REGION };
+if (endpoint) {
+  clientConfig.endpoint = endpoint;
+}
+
+const client = new EventBridgeClient(clientConfig);
 
 const userId = "user-001";
 const viewedProducts = ["blend-001", "blend-002", "blend-003"];

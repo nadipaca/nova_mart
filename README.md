@@ -26,7 +26,7 @@ Serverless payment service implemented as AWS Lambda functions.
 ## Events
 
 ### Consumed
-- `order.placed` - Trigger payment processing
+- `inventory.reserved` - Trigger payment processing after inventory reservation
 - `order.ready_for_payment` - Process payment
 - `inventory.reservation_failed` - Trigger refund
 - `order.cancelled` - Trigger refund
@@ -93,14 +93,29 @@ npm run check
 
 ## Local Development
 
-### Test Locally with SAM
-```bash
-sam local invoke PaymentFunction --event events/order-placed.json
+### One-command Docker network (LocalStack + tables + rules)
+```powershell
+.\tools\dev.ps1
 ```
 
-### Test with Serverless Offline
+### Full baseline (start + seed + lambda health + doctor)
+```powershell
+.\tools\dev-all.ps1
+```
+
+### Baseline health checks
+```powershell
+.\tools\dev-doctor.ps1
+```
+
+### Seed an order event into LocalStack
+```powershell
+.\tools\seed-events.ps1
+```
+
+### Optional: SAM local
 ```bash
-serverless offline
+sam local invoke PaymentFunction --event events/order-placed.json
 ```
 
 ## API

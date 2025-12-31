@@ -34,8 +34,9 @@ Resources:
             Pattern:
               source:
                 - novamart.order-service
+                - novamart.inventory-service
               detail-type:
-                - order.placed
+                - inventory.reserved
                 - order.ready_for_payment
 
   # Refund Processing Function

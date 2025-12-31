@@ -46,10 +46,20 @@ export const inventoryHandler = async (event) => {
   console.log('Received event:', JSON.stringify(event));
 
   const order = event.detail;
+  if (order && order.healthCheck === true) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ status: 'ok' })
+    };
+  }
   if (!order || !Array.isArray(order.items)) {
     console.error('Invalid event.detail for inventory handler');
     return;
   }
+
+  const customerId = order.customerId || order.userId || 'unknown';
+  const userId = order.userId || order.customerId || 'unknown';
+  const totalCents = order.totalCents;
 
   const unavailableItems = []; // items with insufficient stock discovered in first pass
   const updates = []; // candidates to decrement
@@ -114,7 +124,9 @@ export const inventoryHandler = async (event) => {
   if (reservedItems.length > 0) {
     await publishInventoryEvent('inventory.reserved', {
       orderId: order.orderId,
-      customerId: order.customerId,
+      customerId,
+      userId,
+      totalCents,
       items: reservedItems
     });
     console.log('Reserved items:', JSON.stringify(reservedItems));
@@ -127,7 +139,9 @@ export const inventoryHandler = async (event) => {
     // Provide reservedItems alongside failedItems so downstream services can reconcile and refund only failed items.
     await publishInventoryEvent('inventory.reservation_failed', {
       orderId: order.orderId,
-      customerId: order.customerId,
+      customerId,
+      userId,
+      totalCents,
       failedItems,
       reservedItems
     });
@@ -141,14 +155,18 @@ export const inventoryHandler = async (event) => {
   if (unavailableItems.length > 0) {
     await publishInventoryEvent('inventory.out_of_stock', {
       orderId: order.orderId,
-      customerId: order.customerId,
+      customerId,
+      userId,
+      totalCents,
       unavailableItems
     });
   } else {
     // Emit inventory.reserved
     await publishInventoryEvent('inventory.reserved', {
       orderId: order.orderId,
-      customerId: order.customerId,
+      customerId,
+      userId,
+      totalCents,
       items: updates
     });
   }

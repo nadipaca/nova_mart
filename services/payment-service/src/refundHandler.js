@@ -44,6 +44,12 @@ export const refundHandler = async (event) => {
   console.log('Refund Handler - Received event:', JSON.stringify(event));
 
   const order = event.detail;
+  if (order && order.healthCheck === true) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ status: 'ok' })
+    };
+  }
   if (!order || !order.orderId) {
     console.error('Invalid event.detail for refund handler');
     return {

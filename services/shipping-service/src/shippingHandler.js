@@ -33,11 +33,18 @@ export const shippingHandler = async (event) => {
   console.log('Received shipping event:', JSON.stringify(event));
 
   const detail = event.detail;
+  if (detail && detail.healthCheck === true) {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ status: 'ok' })
+    };
+  }
   if (!detail || !detail.orderId) {
     console.error('Invalid event for shipping handler');
     return;
   }
 
+  const customerId = detail.customerId || detail.userId || 'unknown';
   const shipmentId = uuidv4();
   const timestamp = new Date().toISOString();
 
@@ -45,7 +52,7 @@ export const shippingHandler = async (event) => {
   const shipment = {
     shipmentId,
     orderId: detail.orderId,
-    customerId: detail.customerId,
+    customerId,
     paymentId: detail.paymentId,
     status: 'PENDING',
     trackingNumber: `NOVA${Date.now()}`,
@@ -66,7 +73,7 @@ export const shippingHandler = async (event) => {
   await publishShippingEvent('shipment.created', {
     shipmentId,
     orderId: detail.orderId,
-    customerId: detail.customerId,
+    customerId,
     trackingNumber: shipment.trackingNumber,
     estimatedDelivery: shipment.estimatedDelivery,
     timestamp
