@@ -44,11 +44,20 @@ export interface Product {
   reviewCount?: number;
 }
 
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
 export async function fetchProducts(session: Session | null): Promise<Product[]> {
-  const res = await axios.get<Product[]>(`${apiBaseUrl}/products`, {
-    headers: authHeaders(session)
+  const res = await axios.get<PageResponse<Product>>(`${apiBaseUrl}/products`, {
+    headers: authHeaders(session),
+    params: { size: 20 }
   });
-  return res.data;
+  return res.data.content ?? [];
 }
 
 export async function fetchProductById(
