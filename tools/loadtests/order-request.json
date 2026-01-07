@@ -1,0 +1,17 @@
+{
+  "customerId": "cust-1001",
+  "items": [
+    {
+      "productId": 1,
+      "productSku": "blend-001",
+      "quantity": 1,
+      "unitPrice": 89.99
+    },
+    {
+      "productId": 2,
+      "productSku": "kettle-001",
+      "quantity": 1,
+      "unitPrice": 39.99
+    }
+  ]
+}
