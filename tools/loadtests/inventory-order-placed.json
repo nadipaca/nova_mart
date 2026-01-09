@@ -1,0 +1,20 @@
+{
+  "version": "0",
+  "id": "test-event",
+  "detail-type": "order.placed",
+  "source": "novamart.order-service",
+  "account": "000000000000",
+  "time": "2026-01-01T00:00:00Z",
+  "region": "us-east-2",
+  "resources": [],
+  "detail": {
+    "orderId": "loadtest-1",
+    "customerId": "cust-1001",
+    "totalCents": 12998,
+    "items": [
+      { "productId": "blend-001", "quantity": 1 },
+      { "productId": "kettle-001", "quantity": 1 }
+    ]
+  }
+}
+
