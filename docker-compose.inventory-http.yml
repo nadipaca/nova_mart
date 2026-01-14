@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  inventory-dynamodb:
+    image: amazon/dynamodb-local
+    container_name: novamart-inventory-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8000:8000"
+    networks:
+      - novamart
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+    container_name: novamart-inventory-service
+    command: ["sh", "-lc", "node scripts/createLocalTable.js && node src/httpServer.js"]
+    environment:
+      PORT: "3000"
+      AWS_REGION: us-east-2
+      AWS_ENDPOINT_URL: http://inventory-dynamodb:8000
+      INVENTORY_TABLE_NAME: inventory
+      EVENTBRIDGE_DISABLED: "true"
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - inventory-dynamodb
+    ports:
+      - "3000:3000"
+    networks:
+      - novamart
+
+networks:
+  novamart:
+    name: novamart

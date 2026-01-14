@@ -6,11 +6,14 @@ $requiredContainers = @(
   "novamart-payment-dynamodb",
   "novamart-shipping-dynamodb",
   "novamart-catalog-postgres",
-  "novamart-order-postgres",
-  "novamart-catalog-service",
-  "novamart-order-service",
-  "novamart-recommendation-service",
-  "novamart-aiops-service"
+  "novamart-order-postgres"
+)
+
+$requiredServices = @(
+  "catalog-service",
+  "order-service",
+  "recommendation-service",
+  "aiops-service"
 )
 
 function Assert-ContainerRunning {
@@ -23,6 +26,14 @@ function Assert-ContainerRunning {
 
 foreach ($name in $requiredContainers) {
   Assert-ContainerRunning -Name $name
+}
+
+$composeFile = Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "docker-compose.local.yml"
+$runningServices = docker compose -f $composeFile ps --services --filter "status=running"
+foreach ($service in $requiredServices) {
+  if (-not ($runningServices -contains $service)) {
+    throw "Service not running: $service"
+  }
 }
 
 # Verify Postgres connectivity and seed
