@@ -5,11 +5,12 @@ services:
     image: localstack/localstack:3.0
     container_name: novamart-localstack
     environment:
-      SERVICES: events,lambda,iam,logs,cloudwatch
+      SERVICES: events,lambda,iam,logs,cloudwatch,sqs
       AWS_DEFAULT_REGION: us-east-2
       LAMBDA_EXECUTOR: docker
       LAMBDA_DOCKER_NETWORK: novamart
       LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 120
+      DISABLE_INVENTORY_LAMBDA: "true"
     ports:
       - "4566:4566"
     volumes:
@@ -24,6 +25,52 @@ services:
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
     ports:
       - "8000:8000"
+    networks:
+      - novamart
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+    container_name: novamart-inventory-service
+    command: ["sh", "-lc", "node scripts/createLocalTable.js && node src/httpServer.js"]
+    environment:
+      PORT: "3000"
+      AWS_REGION: us-east-2
+      AWS_ENDPOINT_URL: http://inventory-dynamodb:8000
+      INVENTORY_TABLE_NAME: inventory
+      EVENTBRIDGE_ENDPOINT_URL: http://localstack:4566
+      EVENT_BUS_NAME: default
+      EVENT_SOURCE: novamart.inventory-service
+      EVENTBRIDGE_DISABLED: "true"
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - inventory-dynamodb
+      - localstack
+    ports:
+      - "3000:3000"
+    networks:
+      - novamart
+
+  inventory-worker:
+    build:
+      context: ./services/inventory-service
+    container_name: novamart-inventory-worker
+    command: ["npm", "run", "start:sqs-worker"]
+    environment:
+      AWS_REGION: us-east-2
+      AWS_ENDPOINT_URL: http://inventory-dynamodb:8000
+      INVENTORY_TABLE_NAME: inventory
+      SQS_ENDPOINT_URL: http://localstack:4566
+      INVENTORY_QUEUE_NAME: novamart-inventory-orders
+      EVENTBRIDGE_ENDPOINT_URL: http://localstack:4566
+      EVENT_BUS_NAME: default
+      EVENT_SOURCE: novamart.inventory-service
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - inventory-dynamodb
+      - localstack
     networks:
       - novamart
 
@@ -121,6 +168,7 @@ services:
       - order-postgres
       - inventory-dynamodb
       - localstack
+      - inventory-worker
     networks:
       - novamart
 

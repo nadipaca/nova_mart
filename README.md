@@ -1,4 +1,22 @@
-# NovaMart Payment Service
+# NovaMart
+
+Monorepo for NovaMart services and tooling (see `services/`, `frontend/`, and `docs/`).
+
+## Work Status (WIP)
+- [x] Recommendation Service: caseload/behavior scoring implemented (`behavioral-v1`) with weights, engagement normalization, recency decay, and small in-memory caching. See `services/recommendation-service/README.md`.
+- [x] Recommendation Service: event ingestion + idempotency support (`POST /events`) and recommendations API (`GET /recommendations?userId=...`). See `services/recommendation-service/src/app/main.py`.
+- [x] Recommendation Service: local SQLite support + safe schema/index bootstrap. See `services/recommendation-service/src/app/database.py`.
+
+## Services
+- Recommendation Service: `services/recommendation-service/README.md`
+- Payment Service: `services/payment-service/README.md`
+- Order Service: `services/order-service/README.md`
+- Inventory Service: `services/inventory-service/README.md`
+- Catalog Service: `services/catalog-service/README.md`
+- Shipping Service: `services/shipping-service/README.md`
+- AIOps Service: `services/aiops-service/README.md`
+
+## Payment Service
 
 Serverless payment service implemented as AWS Lambda functions.
 
@@ -112,6 +130,9 @@ npm run check
 ```powershell
 .\tools\seed-events.ps1
 ```
+
+### Load testing (Step 2)
+See `docs/load-testing.md`.
 
 ### Optional: SAM local
 ```bash
